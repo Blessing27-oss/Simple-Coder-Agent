@@ -275,6 +275,9 @@ class Agent:
                 print(f"\n{'─'*60}")
                 print(f"Iteration {iteration + 1}/{self.max_iterations}")
                 print(f"{'─'*60}")
+            elif iteration > 0:
+                # Show simple progress dot for multi-step tasks
+                print(f"🤔 Thinking... (step {iteration + 1})")
 
             # REASON: Build prompt and get LLM response
             prompt = self._build_prompt()
@@ -328,6 +331,16 @@ class Agent:
             # Execute the tool
             if self.verbose:
                 print(f"🔧 Executing: {tool_call['name']}({tool_call['parameters']})")
+            else:
+                # Show brief progress indicator even in non-verbose mode
+                tool_desc = {
+                    'write_file': f"✍️  Creating {tool_call['parameters'].get('file_path', 'file')}...",
+                    'edit_file': f"✏️  Editing {tool_call['parameters'].get('file_path', 'file')}...",
+                    'read_file': f"📖 Reading {tool_call['parameters'].get('file_path', 'file')}...",
+                    'list_files': f"📁 Listing files...",
+                    'search_code': f"🔍 Searching code..."
+                }.get(tool_call['name'], f"⚙️  Running {tool_call['name']}...")
+                print(tool_desc)
 
             result = self.tools.execute(tool_call['name'], **tool_call['parameters'])
 
@@ -335,6 +348,12 @@ class Agent:
                 # Show first 200 chars of result
                 result_preview = result[:200] + "..." if len(result) > 200 else result
                 print(f"📊 Result: {result_preview}\n")
+            else:
+                # Brief success indicator
+                if "Error" not in result and "error" not in result.lower():
+                    print(f"   ✅ Done")
+                else:
+                    print(f"   ⚠️  {result[:80]}...")
 
             # OBSERVE: Add interaction to context
             self.context.add_message(
@@ -432,6 +451,7 @@ Final Answer: [Your response to the user]
 7. **Read files before editing** - Understand what you're changing
 8. **Verify your work** - After creating/editing files, read them to confirm
 9. **CRITICAL: Always end with "Final Answer:"** - Even for greetings or simple questions, you MUST use the "Final Answer:" format. Never respond without it.
+10. **NEVER write "Observation:" yourself** - The system provides observations after tool execution. You MUST output ONLY ONE action, then STOP. Do NOT continue with more actions or write fake observations.
 
 ## For Conversational Messages
 
@@ -446,12 +466,14 @@ Final Answer: Hello! I'm SimpleCoder, ready to help with your coding tasks. What
 
 User: "Create a file called test.py with hello world"
 
+YOUR FIRST RESPONSE (output ONLY this, then STOP):
 Thought: I need to create a new file with Python code that prints hello world
 Action: write_file
 Action Input: {{"file_path": "test.py", "content": "print('Hello, world!')"}}
 
-[You would then see]: Observation: File 'test.py' created successfully.
+[SYSTEM PROVIDES]: Observation: File 'test.py' created successfully.
 
+YOUR NEXT RESPONSE (after seeing the observation):
 Thought: The file was created successfully. Task is complete.
 Final Answer: I've created test.py with a hello world print statement.
 

@@ -170,7 +170,6 @@ simplecoder --model "openai/openai.gpt-4.1-2025-04-14" --use-planning "create a 
 - `openai/anthropic.claude-sonnet-4-5-20250929` (for Claude)
 - `openai/vertex_ai.gemini-2.5-pro` (for Gemini)
 - `openai/mistral.mistral-large-2512` (for Mistral)
-- [See full list](https://chat.dartmouth.edu/)
 
 ### Example Session
 
@@ -362,11 +361,11 @@ Key architectural choices (see [IMPLEMENTATION.md](IMPLEMENTATION.md) for detail
 
 ## Recent Improvements
 
-- ✅ **Robust error handling**: Added defensive checks for None responses from LLM
-- ✅ **Better prompt engineering**: Enhanced system prompt to ensure proper ReAct format
-- ✅ **Multi-provider support**: Configured for Dartmouth's multi-model API gateway
-- ✅ **GPT-5 compatibility**: Auto-adjusts temperature for GPT-5 models (temperature=1)
-- ✅ **Model flexibility**: Supports GPT-4.1, GPT-5.2, Claude, Gemini, and Mistral
+- **Robust error handling**: Added defensive checks for None responses from LLM
+- **Better prompt engineering**: Enhanced system prompt to ensure proper ReAct format
+- **Multi-provider support**: Configured for Dartmouth's multi-model API gateway
+- **GPT-5 compatibility**: Auto-adjusts temperature for GPT-5 models (temperature=1)
+- **Model flexibility**: Supports GPT-4.1, GPT-5.2, Claude, Gemini, and Mistral
 
 ## Limitations & Future Work
 
@@ -377,15 +376,29 @@ Key architectural choices (see [IMPLEMENTATION.md](IMPLEMENTATION.md) for detail
 - Limited error recovery on repeated failures
 - No test execution capability
 
-### Future Improvements
+## Demo: Adventure Game
 
-- [ ] Add Python AST validation before writing files
-- [ ] Tool for running tests (pytest/unittest)
-- [ ] Git integration (commit, branch, push)
-- [ ] Multi-agent architecture (planner/coder/tester agents)
-- [ ] Streaming output for real-time progress
-- [ ] Cost and token usage tracking
-- [ ] Support for more languages (JavaScript, Go, etc.)
+A text-adventure game created with SimpleCoder is included as a demonstration.
+
+### Running the Game
+
+```bash
+python adventure_game.py
+```
+
+### How to Play
+
+**Commands:**
+- `north`, `south`, `east`, `west` (or `n`, `s`, `e`, `w`) - Move between rooms
+- `take <item>` - Pick up an item
+- `inventory` or `i` - View your inventory
+- `look` - Examine the current room
+- `help` - Show available commands
+- `quit` - Exit the game
+
+**Objective:** Explore the rooms, collect items, and find your way to the treasure!
+
+---
 
 ## References
 
@@ -393,4 +406,3 @@ Key architectural choices (see [IMPLEMENTATION.md](IMPLEMENTATION.md) for detail
 - **LiteLLM**: Unified interface to 100+ LLMs - https://docs.litellm.ai/
 - **Sentence Transformers**: Semantic embeddings - https://www.sbert.net/
 - **Dartmouth Chat API**: Multi-model gateway - https://chat.dartmouth.edu/
-- **Claude Sonnet 4.5**: Anthropic's latest model - https://www.anthropic.com/
