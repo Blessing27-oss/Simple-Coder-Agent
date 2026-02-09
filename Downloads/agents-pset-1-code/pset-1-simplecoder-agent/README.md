@@ -19,6 +19,10 @@ The agent uses LiteLLM to connect to multiple LLM providers (OpenAI, Anthropic, 
 
 **Configured to use:** Dartmouth's multi-model API gateway with GPT-5.2 or GPT-4.1 as the primary model.
 
+## Demo
+
+📹 **[Watch SimpleCoder in Action](https://drive.google.com/file/d/1w7W-uS_jRJHQDFp-S3BkNEJ3LPSXM5Tp/view?usp=sharing)** - See the agent interact, plan tasks, and build applications step-by-step.
+
 ## Implementation Details
 
 📄 **For detailed design decisions and justifications**, see **[IMPLEMENTATION.md](IMPLEMENTATION.md)**
