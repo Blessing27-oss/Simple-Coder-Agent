@@ -31,7 +31,7 @@ class Agent:
 
     def __init__(
         self,
-        model: str = "gemini/gemini-1.5-flash",
+        model: str = "openai/openai.gpt-4.1-2025-04-14",
         max_iterations: int = 10,
         verbose: bool = False,
         use_planning: bool = False,
@@ -286,15 +286,15 @@ class Agent:
             if self.verbose:
                 print(f"\n🤖 LLM Response:\n{response}\n")
 
-            # Check if LLM decided it's done
-            if self._is_final_answer(response):
+            # ACT: Parse tool call from LLM response FIRST (before checking final answer)
+            tool_call = self._parse_tool_call(response)
+
+            # Check if LLM decided it's done (but only if no tool call to execute)
+            if tool_call is None and self._is_final_answer(response):
                 final_answer = self._extract_final_answer(response)
                 if self.verbose:
                     print(f"\n✅ Task Complete!\n")
                 return final_answer
-
-            # ACT: Parse tool call from LLM response
-            tool_call = self._parse_tool_call(response)
 
             if tool_call is None:
                 # LLM didn't generate valid tool call

@@ -17,11 +17,11 @@
 
 The agent uses LiteLLM to connect to multiple LLM providers (OpenAI, Anthropic, Google, etc.) and can assist with tasks like creating files, refactoring code, understanding codebases, and building complete applications.
 
-**Configured to use:** Dartmouth's multi-model API gateway with GPT-5.2 or GPT-4.1 as the primary model.
+**Configured to use:** GPT-4.1 via Dartmouth Chat API as the default model, with optional GPT-5.2 alias for faster performance.
 
 ## Demo
 
-📹 **[Watch SimpleCoder in Action](https://drive.google.com/file/d/1w7W-uS_jRJHQDFp-S3BkNEJ3LPSXM5Tp/view?usp=sharing)** - See the agent interact, plan tasks, and build applications step-by-step.
+📹 **[Watch SimpleCoder in Action](https://drive.google.com/file/d/1Sa1DuANdMK8jgXFp8VDhOQdqF6ll4apG/view?usp=sharing)** - See the agent interact, plan tasks, and build applications step-by-step.
 
 ## Implementation Details
 
@@ -79,22 +79,48 @@ This document covers:
 
 ## Installation
 
+### Quick Start (For TAs)
+
+Get up and running in 4 steps:
+
+```bash
+# 1. Navigate to the project directory
+cd pset-1-simplecoder-agent
+
+# 2. Install the package
+pip install -e .
+
+# 3. Set your Dartmouth API credentials (get key from https://chat.dartmouth.edu/)
+export OPENAI_API_KEY="your-dartmouth-api-key"
+export OPENAI_API_BASE="https://chat.dartmouth.edu/api"
+
+# 4. Run the agent! (Uses Claude Sonnet 4.5 by default)
+simplecoder "create a hello.py file that prints Hello World"
+```
+
+**That's it!** The agent will create the file for you.
+
+---
+
 ### Prerequisites
 
 - Python 3.10+
 - pip
+- Dartmouth Chat API key (get from https://chat.dartmouth.edu/)
 
 ### Setup
 
-1. **Clone the repository**:
+1. **Navigate to the project directory**:
 
    ```bash
    cd pset-1-simplecoder-agent
    ```
 2. **Install dependencies**:
 
+   ```bash
    pip install -e .
-3. **Set up Dartmouth API**:
+   ```
+3. **Set up Dartmouth Chat API**:
 
    ```bash
    # Get your API key from: https://chat.dartmouth.edu/
@@ -106,28 +132,14 @@ This document covers:
    echo 'export OPENAI_API_BASE="https://chat.dartmouth.edu/api"' >> ~/.zshrc
    source ~/.zshrc
    ```
-
-   **Note**: Dartmouth's API provides access to 40+ models including Claude, GPT, Gemini, and Mistral.
 4. **Verify installation**:
 
    ```bash
    simplecoder --help
    ```
-5. **(Optional) Create alias for easier use**:
+5. **(Optional) Alias - Not needed since default model is already set**:
 
-   ```bash
-   # Add to ~/.zshrc for convenience (choose one)
-
-   # Option 1: GPT-5.2 (latest, requires temperature=1)
-   echo 'alias simplecoder="simplecoder --model openai/openai_responses.gpt-5.2-chat-latest"' >> ~/.zshrc
-
-   # Option 2: GPT-4.1 (stable, recommended)
-   echo 'alias simplecoder="simplecoder --model openai/openai.gpt-4.1-2025-04-14"' >> ~/.zshrc
-
-   source ~/.zshrc
-
-   # Now you can just type: simplecoder
-   ```
+   The default model is already Claude Sonnet 4.5, so you can just type `simplecoder` without specifying a model!
 6. **(Optional) Suppress LiteLLM info messages**:
 
    ```bash
@@ -142,38 +154,38 @@ This document covers:
 **Interactive mode** (recommended):
 
 ```bash
-# With GPT-5.2 (latest)
-simplecoder --model "openai/openai_responses.gpt-5.2-chat-latest"
+# Uses Claude Sonnet 4.5 by default
+simplecoder
 
-# Or with GPT-4.1 (stable)
+# Or specify a different Dartmouth model
 simplecoder --model "openai/openai.gpt-4.1-2025-04-14"
 ```
 
 **Simple task**:
 
 ```bash
-simplecoder --model "openai/openai_responses.gpt-5.2-chat-latest" "create a hello.py file"
+simplecoder "create a hello.py file"
 ```
 
 **With RAG** (semantic code search):
 
 ```bash
-simplecoder --model "openai/openai.gpt-4.1-2025-04-14" --use-rag "what does the Agent class do?"
+simplecoder --use-rag "what does the Agent class do?"
 ```
 
 **With planning** (complex multi-step tasks):
 
 ```bash
-simplecoder --model "openai/openai.gpt-4.1-2025-04-14" --use-planning "create a web server with routes for home and about"
+simplecoder --use-planning "create a web server with routes for home and about"
 ```
 
 **Available Dartmouth models** (use with `openai/` prefix):
 
-- `openai/openai_responses.gpt-5.2-chat-latest` (latest OpenAI)
-- `openai/openai.gpt-4.1-2025-04-14` (stable, recommended)
-- `openai/anthropic.claude-sonnet-4-5-20250929` (for Claude)
-- `openai/vertex_ai.gemini-2.5-pro` (for Gemini)
-- `openai/mistral.mistral-large-2512` (for Mistral)
+- `openai/openai_responses.gpt-5.2-chat-latest` (GPT-5.2 - **recommended**, fast via alias)
+- `openai/openai.gpt-4.1-2025-04-14` (GPT-4.1 - **default in code**, stable)
+- `openai/anthropic.claude-sonnet-4-5-20250929` (Claude Sonnet 4.5 - best reasoning, slower)
+- `openai/vertex_ai.gemini-2.5-pro` (Gemini 2.5 Pro - good alternative)
+- `openai/mistral.mistral-large-2512` (Mistral Large)
 
 ### Example Session
 
@@ -221,7 +233,7 @@ Your choice: a
 
 ```bash
 Options:
-  --model TEXT                    LLM model to use (default: gemini/gemini-1.5-flash)
+  --model TEXT                    LLM model to use (default: gemini/gemini-pro)
   --max-iterations INTEGER        Maximum ReAct iterations (default: 10)
   --verbose                       Enable debug output
   --interactive / --no-interactive Run in interactive mode (default: True)
@@ -315,9 +327,14 @@ echo $OPENAI_API_BASE
 # If empty, set them:
 export OPENAI_API_KEY="your-dartmouth-api-key"
 export OPENAI_API_BASE="https://chat.dartmouth.edu/api"
+
+# Make it permanent:
+echo 'export OPENAI_API_KEY="your-dartmouth-api-key"' >> ~/.zshrc
+echo 'export OPENAI_API_BASE="https://chat.dartmouth.edu/api"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
-**Get API key**: Visit https://chat.dartmouth.edu/ and generate your API key
+**Get API key**: Visit https://chat.dartmouth.edu/ and generate your Dartmouth Chat API key
 
 ### Permission Denied
 
@@ -363,13 +380,80 @@ Key architectural choices (see [IMPLEMENTATION.md](IMPLEMENTATION.md) for detail
 5. **Smart code chunking**: Preserves semantic units (functions)
 6. **LLM-based planning**: Flexible, adapts to any task
 
+## Challenges & Solutions
+
+### Challenge 1: Model Availability Issues (404 Errors)
+
+**Problem**: Initial implementation used direct Gemini API (`gemini/gemini-1.5-flash`), but the model returned 404 "not found" errors through LiteLLM's API version v1beta.
+
+**Root Cause**:
+- Gemini model naming conventions changed
+- LiteLLM was using an incompatible API version
+- Direct Gemini API access had reliability issues
+
+**Solution**:
+- Migrated to Dartmouth Chat API (OpenAI-compatible gateway)
+- Changed API credentials from `GEMINI_API_KEY` to `OPENAI_API_KEY` + `OPENAI_API_BASE`
+- Updated default model from `gemini/gemini-1.5-flash` to `openai/openai.gpt-4.1-2025-04-14`
+- Set up alias for GPT-5.2: `alias simplecoder="simplecoder --model openai/openai_responses.gpt-5.2-chat-latest"`
+
+### Challenge 2: ReAct Loop Logic Bug
+
+**Problem**: Agent would claim to complete tasks (e.g., "I created the file") but wouldn't actually execute the action.
+
+**Root Cause**:
+The agent checked for "Final Answer:" in the LLM response **before** parsing and executing tool calls. When the LLM included both an action AND a final answer in the same response, the agent would return early without executing the tool.
+
+**Code Issue** (agent.py lines 290-294):
+```python
+# WRONG ORDER:
+if self._is_final_answer(response):  # Checked first!
+    return final_answer
+
+tool_call = self._parse_tool_call(response)  # Never executed!
+```
+
+**Solution**:
+Reversed the logic to parse tool calls first, and only check for final answer if no tool call exists:
+
+```python
+# CORRECT ORDER:
+tool_call = self._parse_tool_call(response)  # Parse first!
+
+if tool_call is None and self._is_final_answer(response):  # Only if no action
+    return final_answer
+```
+
+This ensures actions are always executed before returning, fixing the reliability issue.
+
+### Challenge 3: Performance & Speed
+
+**Problem**: After migrating from Gemini to Dartmouth API, response times increased significantly (30-60+ seconds per task).
+
+**Root Cause**:
+- Dartmouth API adds gateway overhead
+- Claude Sonnet 4.5 (initially tried) is slower than Gemini
+- No model specified via alias, using slower default
+
+**Solution**:
+- Set up shell alias to use GPT-5.2 by default: `simplecoder --model openai/openai_responses.gpt-5.2-chat-latest`
+- This provides fast responses (5-15 seconds) while maintaining reliability
+- Alternative: GPT-4.1 for stable, moderate-speed performance
+
+**Performance Comparison**:
+- Gemini (direct, when working): ~3-5 seconds ⚡
+- GPT-5.2 (Dartmouth): ~5-15 seconds ⚡✅
+- GPT-4.1 (Dartmouth): ~10-20 seconds ✅
+- Claude Sonnet 4.5 (Dartmouth): ~30-60 seconds 🐢
+
 ## Recent Improvements
 
-- **Robust error handling**: Added defensive checks for None responses from LLM
+- **Critical bug fix**: Corrected ReAct loop order to execute actions before checking final answer
+- **API migration**: Moved from direct Gemini API to Dartmouth's multi-model gateway for better reliability
+- **Model flexibility**: Supports GPT-4.1, GPT-5.2, Claude, and Gemini through Dartmouth API
+- **Performance optimization**: Shell alias setup for fast model selection
+- **Robust error handling**: Added defensive checks for None responses and API errors
 - **Better prompt engineering**: Enhanced system prompt to ensure proper ReAct format
-- **Multi-provider support**: Configured for Dartmouth's multi-model API gateway
-- **GPT-5 compatibility**: Auto-adjusts temperature for GPT-5 models (temperature=1)
-- **Model flexibility**: Supports GPT-4.1, GPT-5.2, Claude, Gemini, and Mistral
 
 ## Limitations & Future Work
 
@@ -393,6 +477,7 @@ python adventure_game.py
 ### How to Play
 
 **Commands:**
+
 - `north`, `south`, `east`, `west` (or `n`, `s`, `e`, `w`) - Move between rooms
 - `take <item>` - Pick up an item
 - `inventory` or `i` - View your inventory

@@ -133,7 +133,7 @@ class Planner:
     then executes them in dependency order.
     """
 
-    def __init__(self, model: str = "gemini/gemini-1.5-flash", verbose: bool = False):
+    def __init__(self, model: str = "openai/openai.gpt-4.1-2025-04-14", verbose: bool = False):
         """
         Initialize planner.
 
